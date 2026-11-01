@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopCraft - Store Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background-color: #f8fafc; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* Navigation Header */
+    header { background-color: #1e293b; color: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .navbar { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: #ffffff; text-decoration: none; }
+    .logo span { color: #3b82f6; }
+    .nav-links { list-style: none; display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a { text-decoration: none; color: #cbd5e1; font-weight: 500; transition: color 0.3s; cursor: pointer; }
+    .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
+    
+    .cart-btn { background: #2563eb; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+    .cart-btn:hover { background: #1d4ed8; }
+    .logout-btn { background: #ef4444; color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .logout-btn:hover { background: #dc2626; }
+
+    /* Main Container */
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; flex: 1; width: 100%; }
+
+    /* Controls Bar */
+    .controls-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .search-box { padding: 0.6rem 1rem; width: 280px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+    .filter-select { padding: 0.6rem 1rem; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; }
+
+    /* Product Grid */
+    .section-title { margin-bottom: 1rem; color: #1e293b; font-size: 1.5rem; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .product-card { background: white; border-radius: 10px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    .category-tag { background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 12px; width: fit-content; margin-bottom: 0.5rem; }
+    .product-name { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: #0f172a; }
+    .product-price { font-size: 1.25rem; font-weight: 700; color: #16a34a; margin-bottom: 1rem; }
+    .add-cart-btn { background: #2563eb; color: white; border: none; padding: 0.6rem; border-radius: 6px; cursor: pointer; font-weight: 500; width: 100%; transition: background 0.2s; }
+    .add-cart-btn:hover { background: #1d4ed8; }
+
+    /* Orders Section */
+    .orders-section { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 3rem; }
+    .orders-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+    .order-item { background: #f8fafc; padding: 1rem; border-radius: 8px; border-left: 4px solid #2563eb; display: flex; justify-content: space-between; align-items: center; }
+    .empty-state { text-align: center; padding: 2rem; color: #64748b; font-size: 0.95rem; }
+
+    /* Cart Sidebar Drawer */
+    .cart-drawer { position: fixed; top: 0; right: -400px; width: 380px; height: 100%; background: white; box-shadow: -4px 0 15px rgba(0,0,0,0.1); z-index: 2000; transition: right 0.3s ease; display: flex; flex-direction: column; padding: 1.5rem; }
+    .cart-drawer.open { right: 0; }
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; }
+    .close-drawer { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+    .cart-items { flex: 1; overflow-y: auto; margin: 1rem 0; display: flex; flex-direction: column; gap: 1rem; }
+    .cart-item-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; }
+    .checkout-btn { background: #16a34a; color: white; border: none; padding: 0.8rem; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; }
+    .checkout-btn:hover { background: #15803d; }
+
+    /* Modal Popups (About / Contact) */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 2rem; border-radius: 10px; max-width: 500px; width: 90%; position: relative; }
+    .close-modal { position: absolute; top: 1rem; right: 1rem; font-size: 1.2rem; cursor: pointer; border: none; background: none; }
+
+    footer { background: #1e293b; color: white; text-align: center; padding: 1.2rem; margin-top: auto; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header>
+    <nav class="navbar">
+      <a href="#" class="logo">Shop<span>Craft</span></a>
+      <ul class="nav-links">
+        <li><a href="#products-section" class="active">Products</a></li>
+        <li><a href="#orders-section">My Orders</a></li>
+        <li><a onclick="openModal('aboutModal')">About Us</a></li>
+        <li><a onclick="openModal('contactModal')">Contact Us</a></li>
+        <li>
+          <button class="cart-btn" onclick="toggleCart()">
+            🛒 Cart (<span id="cartCount">0</span>)
+          </button>
+        </li>
+        <li><span id="welcomeUser" style="font-size:0.9rem; color:#cbd5e1;"></span></li>
+        <li><button class="logout-btn" onclick="logout()">Logout</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Products Catalog Section -->
+    <section id="products-section">
+      <div class="controls-bar">
+        <h2 class="section-title">Product Catalog</h2>
+        <div style="display: flex; gap: 1rem;">
+          <input type="text" id="searchInput" class="search-box" placeholder="Search products..." oninput="filterProducts()">
+          <select id="categoryFilter" class="filter-select" onchange="filterProducts()">
+            <option value="ALL">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Mobiles">Mobiles</option>
+            <option value="Audio">Audio</option>
+            <option value="Wearables">Wearables</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Gaming">Gaming</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="product-grid" id="productGrid">
+        <div class="empty-state">Loading products...</div>
+      </div>
+    </section>
+
+    <!-- My Orders Section -->
+    <section id="orders-section" class="orders-section">
+      <h2 class="section-title">My Orders</h2>
+      <div id="ordersContainer">
+        <div class="empty-state">Fetching orders...</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Slide-Out Cart Drawer -->
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="drawer-header">
+      <h3>Shopping Cart</h3>
+      <button class="close-drawer" onclick="toggleCart()">&times;</button>
+    </div>
+    <div class="cart-items" id="cartItemsList">
+      <div class="empty-state">Your cart is empty.</div>
+    </div>
+    <div style="border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+      <div style="display:flex; justify-content:space-between; font-weight:700; margin-bottom:1rem;">
+        <span>Total:</span>
+        <span id="cartTotal">$0.00</span>
+      </div>
+      <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- About Us Modal -->
+  <div class="modal" id="aboutModal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal('aboutModal')">&times;</button>
+      <h2>About ShopCraft</h2>
+      <br>
+      <p style="color: #64748b; line-height: 1.6;">
+        ShopCraft is a next-generation E-Commerce platform built with Spring Boot and Java. We provide reliable tech gadgets, fast delivery, and seamless ordering experiences across all categories.
+      </p>
+    </div>
+  </div>
+
+  <!-- Contact Us Modal -->
+  <div class="modal" id="contactModal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal('contactModal')">&times;</button>
+      <h2>Contact Us</h2>
+      <br>
+      <p style="margin-bottom: 0.5rem;"><strong>📍 Address:</strong> Tech Park, Building 4, Suite 200</p>
+      <p style="margin-bottom: 0.5rem;"><strong>📞 Phone:</strong> +1 (800) 555-0199</p>
+      <p style="margin-bottom: 0.5rem;"><strong>✉️ Email:</strong> support@shopcraft.com</p>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 ShopCraft E-Commerce Application. All rights reserved.</p>
+  </footer>
+
+  <script>
+    let allProducts = [];
+    let cart = [];
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+
+    // Check Authentication state
+    if (!currentUser) {
+      window.location.href = '/index.html';
+    } else {
+      document.getElementById('welcomeUser').innerText = `Hello, ${currentUser.name || 'User'}`;
+    }
+
+    // Fetch and render all products
+    async function loadProducts() {
+      try {
+        const res = await fetch('/api/products');
+        allProducts = await res.json();
+        renderProducts(allProducts);
+      } catch (err) {
+        document.getElementById('productGrid').innerHTML = '<div class="empty-state">Failed to load products. Make sure backend is running.</div>';
+      }
+    }
+
+    function renderProducts(products) {
+      const grid = document.getElementById('productGrid');
+      if (products.length === 0) {
+        grid.innerHTML = '<div class="empty-state">No products found.</div>';
+        return;
+      }
+      grid.innerHTML = products.map(p => `
+        <div class="product-card">
+          <div>
+            <span class="category-tag">${p.category || 'General'}</span>
+            <h3 class="product-name">${p.name}</h3>
+          </div>
+          <div>
+            <div class="product-price">$${p.price.toFixed(2)}</div>
+            <button class="add-cart-btn" onclick="addToCart(${p.id})">Add to Cart</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterProducts() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const cat = document.getElementById('categoryFilter').value;
+
+      const filtered = allProducts.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(search);
+        const matchesCat = cat === 'ALL' || p.category === cat;
+        return matchesSearch && matchesCat;
+      });
+      renderProducts(filtered);
+    }
+
+    // Cart Drawer Management
+    function addToCart(productId) {
+      const prod = allProducts.find(p => p.id === productId);
+      if (!prod) return;
+
+      const existing = cart.find(item => item.id === productId);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ ...prod, qty: 1 });
+      }
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      document.getElementById('cartCount').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+      const list = document.getElementById('cartItemsList');
+      
+      if (cart.length === 0) {
+        list.innerHTML = '<div class="empty-state">Your cart is empty.</div>';
+        document.getElementById('cartTotal').innerText = '$0.00';
+        return;
+      }
+
+      let total = 0;
+      list.innerHTML = cart.map(item => {
+        const subtotal = item.price * item.qty;
+        total += subtotal;
+        return `
+          <div class="cart-item-row">
+            <div>
+              <strong>${item.name}</strong><br>
+              <small>$${item.price.toFixed(2)} x ${item.qty}</small>
+            </div>
+            <span>$${subtotal.toFixed(2)}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
+    }
+
+    function toggleCart() {
+      document.getElementById('cartDrawer').classList.toggle('open');
+    }
+
+    async function checkout() {
+      if (cart.length === 0) return alert('Your cart is empty!');
+
+      const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: currentUser.userId, totalAmount: totalAmount })
+        });
+        if (res.ok) {
+          alert('Order placed successfully!');
+          cart = [];
+          updateCartUI();
+          toggleCart();
+          loadOrders();
+        }
+      } catch (err) {
+        alert('Checkout failed');
+      }
+    }
+
+    // Fetch User Orders
+    async function loadOrders() {
+      const container = document.getElementById('ordersContainer');
+      try {
+        const res = await fetch(`/api/orders/user/${currentUser.userId}`);
+        const orders = await res.json();
+
+        if (!orders || orders.length === 0) {
+          container.innerHTML = '<div class="empty-state">No past orders found. Place an order to see it listed here!</div>';
+          return;
+        }
+
+        container.innerHTML = `<ul class="orders-list">` + orders.map(o => `
+          <li class="order-item">
+            <div>
+              <strong>Order #${o.id}</strong><br>
+              <small style="color:#64748b;">Status: ${o.status || 'PLACED'}</small>
+            </div>
+            <div style="font-weight:700; color:#16a34a;">
+              $${o.totalAmount.toFixed(2)}
+            </div>
+          </li>
+        `).join('') + `</ul>`;
+      } catch (err) {
+        container.innerHTML = '<div class="empty-state">Failed to load orders.</div>';
+      }
+    }
+
+    // Modal Helpers
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/index.html';
+    }
+
+    // Initialize Page Data
+    loadProducts();
+    loadOrders();
+  </script>
+</body>
+</html>
