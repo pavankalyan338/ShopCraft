@@ -8,8 +8,7 @@ ShopCraft offers a shopping experience featuring user registration, BCrypt authe
 
 ## 🌟 Live Demo & Submissions
 
-- **Live Application URL:** [https://shopcraft-app.onrender.com](https://shopcraft-app.onrender.com) *(Update with your actual Render URL)*
-- **GitHub Repository:** `https://github.com/YOUR-USERNAME/shopcraft-springboot`
+- **GitHub Repository:** `https://github.com/pavankalyan338/ShopCraft`
 
 ---
 
